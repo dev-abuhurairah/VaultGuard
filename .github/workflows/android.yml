@@ -42,7 +42,12 @@ jobs:
           fi
 
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: |
+          ./gradlew testDebugUnitTest --stacktrace || {
+            echo "=== UNIT TEST FAILED, DUMPING RESULTS ==="
+            find app/build/ -name "*.xml" -exec cat {} + 2>/dev/null || true
+            exit 1
+          }
 
       - name: Upload Test Results
         if: always()

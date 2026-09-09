@@ -121,7 +121,8 @@ class VaultAutofillService : AutofillService() {
         serviceScope.launch {
             try {
                 val parsed = parseStructure(structure)
-                if (!parsed.savedPassword.isNullOrBlank()) {
+                val savedPassword = parsed.savedPassword
+                if (!savedPassword.isNullOrBlank()) {
                     val username = parsed.savedUsername ?: ""
                     val title = parsed.webDomain ?: packageName.substringAfterLast('.')
 
@@ -130,7 +131,7 @@ class VaultAutofillService : AutofillService() {
                         title = title.replaceFirstChar { it.uppercase() },
                         category = VaultCategory.LOGIN,
                         username = username,
-                        password = parsed.savedPassword,
+                        password = savedPassword,
                         packageName = packageName,
                         websiteUrl = parsed.webDomain ?: ""
                     )

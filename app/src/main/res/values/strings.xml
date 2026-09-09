@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">VaultGuard</string>
+    <string name="autofill_service_label">VaultGuard Autofill</string>
+    <string name="accessibility_service_label">VaultGuard Autofill Assistant</string>
+    <string name="accessibility_service_description">VaultGuard uses this service to securely detect username and password fields in apps and web browsers to provide instant confirmation prompts and auto-save capabilities.</string>
+    <string name="credential_provider_label">VaultGuard Credential Provider</string>
+    
+    <!-- Notification Channels -->
+    <string name="channel_prompt_name">Password Prompts &amp; Alerts</string>
+    <string name="channel_prompt_desc">Notifications for auto-save and autofill confirmations</string>
+    <string name="channel_clipboard_name">Clipboard Security</string>
+    <string name="channel_clipboard_desc">Alerts when clipboard is cleared for privacy</string>
+</resources>

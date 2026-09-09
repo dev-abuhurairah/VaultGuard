@@ -2,7 +2,7 @@ package com.vaultguard.app.core.repository
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Base64
+import java.util.Base64
 import com.vaultguard.app.core.database.VaultDao
 import com.vaultguard.app.core.database.VaultDatabase
 import com.vaultguard.app.core.database.VaultEntity
@@ -71,7 +71,7 @@ class VaultRepository private constructor(
         val verifier = CryptoManager.createPasswordVerifier(derivedKey)
 
         prefs.edit()
-            .putString(PREF_SALT, Base64.encodeToString(salt, Base64.NO_WRAP))
+            .putString(PREF_SALT, Base64.getEncoder().encodeToString(salt))
             .putString(PREF_PASSWORD_VERIFIER, verifier)
             .apply()
 
@@ -88,7 +88,7 @@ class VaultRepository private constructor(
         val saltBase64 = prefs.getString(PREF_SALT, null) ?: return false
         val verifier = prefs.getString(PREF_PASSWORD_VERIFIER, null) ?: return false
 
-        val salt = Base64.decode(saltBase64, Base64.NO_WRAP)
+        val salt = Base64.getDecoder().decode(saltBase64)
         val derivedKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt)
 
         if (CryptoManager.verifyPassword(verifier, derivedKey)) {
@@ -114,7 +114,7 @@ class VaultRepository private constructor(
         val encryptedMasterKey = prefs.getString("pref_enc_master_key", null)
         if (encryptedMasterKey != null) {
             try {
-                val decryptedKeyBytes = Base64.decode(CryptoManager.decrypt(encryptedMasterKey, hwKey), Base64.NO_WRAP)
+                val decryptedKeyBytes = Base64.getDecoder().decode(CryptoManager.decrypt(encryptedMasterKey, hwKey))
                 val secretKey = javax.crypto.spec.SecretKeySpec(decryptedKeyBytes, "AES")
                 if (CryptoManager.verifyPassword(verifier, secretKey)) {
                     activeMasterKey = secretKey
@@ -134,7 +134,7 @@ class VaultRepository private constructor(
         if (enable && activeMasterKey != null) {
             // Securely wrap the active master key with hardware Keystore AES key
             val hwKey = CryptoManager.getOrCreateHardwareMasterKey()
-            val masterKeyBase64 = Base64.encodeToString(activeMasterKey!!.encoded, Base64.NO_WRAP)
+            val masterKeyBase64 = Base64.getEncoder().encodeToString(activeMasterKey!!.encoded)
             val encMasterKey = CryptoManager.encrypt(masterKeyBase64, hwKey)
             prefs.edit().putString("pref_enc_master_key", encMasterKey).apply()
         } else if (!enable) {

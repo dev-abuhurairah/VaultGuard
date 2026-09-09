@@ -3,8 +3,8 @@ package com.vaultguard.app.core.security
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Base64
 import java.security.KeyStore
+import java.util.Base64
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -95,7 +95,7 @@ object CryptoManager {
         System.arraycopy(iv, 0, combined, 0, iv.size)
         System.arraycopy(cipherText, 0, combined, iv.size, cipherText.size)
 
-        return Base64.encodeToString(combined, Base64.NO_WRAP)
+        return Base64.getEncoder().encodeToString(combined)
     }
 
     /**
@@ -103,7 +103,7 @@ object CryptoManager {
      */
     fun decrypt(encryptedPayloadBase64: String, secretKey: SecretKey): String {
         if (encryptedPayloadBase64.isBlank()) return ""
-        val combined = Base64.decode(encryptedPayloadBase64, Base64.NO_WRAP)
+        val combined = Base64.getDecoder().decode(encryptedPayloadBase64)
         if (combined.size < GCM_IV_LENGTH) throw IllegalArgumentException("Ciphertext payload too short")
 
         val iv = ByteArray(GCM_IV_LENGTH)

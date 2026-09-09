@@ -54,7 +54,7 @@ object VaultBackupManager {
             val exportRoot = JSONObject().apply {
                 put("app", "VaultGuard")
                 put("version", 1)
-                put("salt", android.util.Base64.encodeToString(salt, android.util.Base64.NO_WRAP))
+                put("salt", java.util.Base64.getEncoder().encodeToString(salt))
                 put("data", encryptedPayload)
             }
 
@@ -93,7 +93,7 @@ object VaultBackupManager {
             val saltBase64 = rootObj.getString("salt")
             val encryptedData = rootObj.getString("data")
 
-            val salt = android.util.Base64.decode(saltBase64, android.util.Base64.NO_WRAP)
+            val salt = java.util.Base64.getDecoder().decode(saltBase64)
             val derivedKey = CryptoManager.deriveKeyFromPassword(backupPassword.toCharArray(), salt)
             val decryptedJson = CryptoManager.decrypt(encryptedData, derivedKey)
 

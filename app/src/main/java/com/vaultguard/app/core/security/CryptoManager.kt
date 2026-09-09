@@ -96,20 +96,18 @@ object CryptoManager {
     fun encrypt(plainText: String, secretKey: SecretKey): String {
         if (plainText.isEmpty()) return ""
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val iv: ByteArray
-        val cipherText: ByteArray
-
-        try {
+        val (iv, cipherText) = try {
             val genIv = ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
             val parameterSpec = GCMParameterSpec(GCM_TAG_LENGTH, genIv)
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec)
-            cipherText = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-            iv = cipher.iv ?: genIv
+            val ct = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+            Pair(cipher.iv ?: genIv, ct)
         } catch (e: java.security.InvalidAlgorithmParameterException) {
             // Android Keystore key with enforced randomized encryption generating its own IV
             cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-            cipherText = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-            iv = cipher.iv ?: throw IllegalStateException("Keystore cipher did not produce an IV")
+            val ct = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+            val generatedIv = cipher.iv ?: throw IllegalStateException("Keystore cipher did not produce an IV")
+            Pair(generatedIv, ct)
         }
 
         val combined = ByteArray(iv.size + cipherText.size)

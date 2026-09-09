@@ -85,20 +85,6 @@
                 android:value="Password autofill overlay prompts and sensitive input detection" />
         </service>
 
-        <!-- 4. Modern Android 14+ Credential Provider Service -->
-        <service
-            android:name=".services.CredentialManagerProviderService"
-            android:exported="true"
-            android:label="@string/credential_provider_label"
-            android:permission="android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.credentials.CredentialProviderService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.credentials.provider"
-                android:resource="@xml/credential_provider_config" />
-        </service>
-
     </application>
 
 </manifest>

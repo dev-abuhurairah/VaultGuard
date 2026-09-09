@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.vaultguard.app.core.repository.VaultRepository
 
-class VaultGuardApplication : Application(), DefaultLifecycleObserver {
+class VaultGuardApplication : Application() {
 
     lateinit var repository: VaultRepository
         private set
@@ -18,18 +18,15 @@ class VaultGuardApplication : Application(), DefaultLifecycleObserver {
         super.onCreate()
         repository = VaultRepository.getInstance(this)
         createNotificationChannels()
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-    }
+        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                repository.checkAutoLock()
+            }
 
-    override fun onStart(owner: LifecycleOwner) {
-        super.onStart(owner)
-        // Check if vault needs auto-locking after timeout
-        repository.checkAutoLock()
-    }
-
-    override fun onStop(owner: LifecycleOwner) {
-        super.onStop(owner)
-        repository.touch()
+            override fun onStop(owner: LifecycleOwner) {
+                repository.touch()
+            }
+        })
     }
 
     private fun createNotificationChannels() {

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.crypto.SecretKey
 
 /**
@@ -58,89 +59,154 @@ class VaultRepository private constructor(
         }
     }
 
+    private const val PREF_PBKDF2_ITERATIONS = "pref_pbkdf2_iterations"
+
     fun isVaultSetup(): Boolean {
         return prefs.contains(PREF_PASSWORD_VERIFIER) && prefs.contains(PREF_SALT)
     }
 
     /**
-     * Initializes the Vault with a new Master Password.
+     * Initializes the Vault with a new Master Password on Dispatchers.Default.
+     * Automatically binds the master key to the hardware Keystore for seamless biometrics.
      */
-    fun setupMasterPassword(password: String): Boolean {
-        val salt = CryptoManager.generateSalt()
-        val derivedKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt)
-        val verifier = CryptoManager.createPasswordVerifier(derivedKey)
+    suspend fun setupMasterPassword(password: String): Boolean = withContext(Dispatchers.Default) {
+        try {
+            val salt = CryptoManager.generateSalt()
+            val iterations = CryptoManager.PBKDF2_ITERATIONS
+            val derivedKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt, iterations)
+            val verifier = CryptoManager.createPasswordVerifier(derivedKey)
 
-        prefs.edit()
-            .putString(PREF_SALT, Base64.getEncoder().encodeToString(salt))
-            .putString(PREF_PASSWORD_VERIFIER, verifier)
-            .apply()
+            prefs.edit()
+                .putString(PREF_SALT, Base64.getEncoder().encodeToString(salt))
+                .putString(PREF_PASSWORD_VERIFIER, verifier)
+                .putInt(PREF_PBKDF2_ITERATIONS, iterations)
+                .apply()
 
-        activeMasterKey = derivedKey
-        _isUnlocked.value = true
-        lastActiveTime = System.currentTimeMillis()
-        return true
+            activeMasterKey = derivedKey
+            _isUnlocked.value = true
+            lastActiveTime = System.currentTimeMillis()
+
+            // Automatically bind master key to hardware Keystore for biometrics
+            syncBiometricKey(derivedKey)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 
     /**
-     * Verifies the entered Master Password and unlocks the session.
+     * Verifies the entered Master Password and unlocks the session on Dispatchers.Default.
+     * Automatically synchronizes the Keystore biometric key on successful unlock.
      */
-    fun unlockWithPassword(password: String): Boolean {
-        val saltBase64 = prefs.getString(PREF_SALT, null) ?: return false
-        val verifier = prefs.getString(PREF_PASSWORD_VERIFIER, null) ?: return false
+    suspend fun unlockWithPassword(password: String): Boolean = withContext(Dispatchers.Default) {
+        val saltBase64 = prefs.getString(PREF_SALT, null) ?: return@withContext false
+        val verifier = prefs.getString(PREF_PASSWORD_VERIFIER, null) ?: return@withContext false
+        val iterations = prefs.getInt(PREF_PBKDF2_ITERATIONS, CryptoManager.PBKDF2_ITERATIONS)
 
-        val salt = Base64.getDecoder().decode(saltBase64)
-        val derivedKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt)
+        val salt = try {
+            Base64.getDecoder().decode(saltBase64)
+        } catch (e: Exception) {
+            return@withContext false
+        }
 
+        // 1. Try with configured/standard iterations
+        val derivedKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt, iterations)
         if (CryptoManager.verifyPassword(verifier, derivedKey)) {
             activeMasterKey = derivedKey
             _isUnlocked.value = true
             lastActiveTime = System.currentTimeMillis()
-            return true
+            syncBiometricKey(derivedKey)
+            return@withContext true
         }
-        return false
-    }
 
-    /**
-     * Unlocks the vault via biometric authentication by using the hardware Keystore.
-     */
-    fun unlockWithBiometric(): Boolean {
-        if (!isBiometricEnabled()) return false
-        val verifier = prefs.getString(PREF_PASSWORD_VERIFIER, null) ?: return false
-        
-        // When biometric is enabled, the master key is cached in hardware Keystore wrapper
-        val hwKey = CryptoManager.getOrCreateHardwareMasterKey()
-        val encryptedMasterKey = prefs.getString("pref_enc_master_key", null)
-        if (encryptedMasterKey != null) {
+        // 2. Fallback check: if previously created with 600,000 iterations, migrate seamlessly to 150,000
+        if (iterations != 600_000) {
             try {
-                val decryptedKeyBytes = Base64.getDecoder().decode(CryptoManager.decrypt(encryptedMasterKey, hwKey))
-                val secretKey = javax.crypto.spec.SecretKeySpec(decryptedKeyBytes, "AES")
-                if (CryptoManager.verifyPassword(verifier, secretKey)) {
-                    activeMasterKey = secretKey
+                val legacyKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt, 600_000)
+                if (CryptoManager.verifyPassword(verifier, legacyKey)) {
+                    val fastKey = CryptoManager.deriveKeyFromPassword(password.toCharArray(), salt, CryptoManager.PBKDF2_ITERATIONS)
+                    val fastVerifier = CryptoManager.createPasswordVerifier(fastKey)
+
+                    prefs.edit()
+                        .putString(PREF_PASSWORD_VERIFIER, fastVerifier)
+                        .putInt(PREF_PBKDF2_ITERATIONS, CryptoManager.PBKDF2_ITERATIONS)
+                        .apply()
+
+                    activeMasterKey = fastKey
                     _isUnlocked.value = true
                     lastActiveTime = System.currentTimeMillis()
-                    return true
+                    syncBiometricKey(fastKey)
+                    return@withContext true
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-        return false
+
+        return@withContext false
+    }
+
+    /**
+     * Unlocks the vault via biometric authentication by decrypting the hardware-bound master key.
+     */
+    fun unlockWithBiometric(): Boolean {
+        val verifier = prefs.getString(PREF_PASSWORD_VERIFIER, null) ?: return false
+        val encryptedMasterKey = prefs.getString("pref_enc_master_key", null) ?: return false
+
+        return try {
+            val hwKey = CryptoManager.getOrCreateHardwareMasterKey()
+            val decryptedKeyBytes = Base64.getDecoder().decode(CryptoManager.decrypt(encryptedMasterKey, hwKey))
+            val secretKey = javax.crypto.spec.SecretKeySpec(decryptedKeyBytes, "AES")
+
+            if (CryptoManager.verifyPassword(verifier, secretKey)) {
+                activeMasterKey = secretKey
+                _isUnlocked.value = true
+                lastActiveTime = System.currentTimeMillis()
+                prefs.edit().putBoolean(PREF_BIOMETRIC_ENABLED, true).apply()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
+     * Binds the master key to the hardware-backed Keystore for biometric unlocking.
+     */
+    fun syncBiometricKey(key: SecretKey = activeMasterKey ?: return false): Boolean {
+        return try {
+            val hwKey = CryptoManager.getOrCreateHardwareMasterKey()
+            val masterKeyBase64 = Base64.getEncoder().encodeToString(key.encoded)
+            val encMasterKey = CryptoManager.encrypt(masterKeyBase64, hwKey)
+            prefs.edit()
+                .putString("pref_enc_master_key", encMasterKey)
+                .putBoolean(PREF_BIOMETRIC_ENABLED, true)
+                .apply()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    fun isBiometricKeySynced(): Boolean {
+        return prefs.contains("pref_enc_master_key")
     }
 
     fun enableBiometric(enable: Boolean) {
         prefs.edit().putBoolean(PREF_BIOMETRIC_ENABLED, enable).apply()
         if (enable && activeMasterKey != null) {
-            // Securely wrap the active master key with hardware Keystore AES key
-            val hwKey = CryptoManager.getOrCreateHardwareMasterKey()
-            val masterKeyBase64 = Base64.getEncoder().encodeToString(activeMasterKey!!.encoded)
-            val encMasterKey = CryptoManager.encrypt(masterKeyBase64, hwKey)
-            prefs.edit().putString("pref_enc_master_key", encMasterKey).apply()
+            syncBiometricKey(activeMasterKey!!)
         } else if (!enable) {
             prefs.edit().remove("pref_enc_master_key").apply()
         }
     }
 
-    fun isBiometricEnabled(): Boolean = prefs.getBoolean(PREF_BIOMETRIC_ENABLED, false)
+    fun isBiometricEnabled(): Boolean = prefs.getBoolean(PREF_BIOMETRIC_ENABLED, false) && isBiometricKeySynced()
 
     fun isScreenProtectionEnabled(): Boolean = prefs.getBoolean(PREF_SCREEN_PROTECTION, true)
     fun setScreenProtectionEnabled(enabled: Boolean) = prefs.edit().putBoolean(PREF_SCREEN_PROTECTION, enabled).apply()

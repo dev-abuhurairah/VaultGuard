@@ -29,7 +29,7 @@ object CryptoManager {
     private const val AES_TRANSFORMATION = "AES/GCM/NoPadding"
     private const val GCM_TAG_LENGTH = 128
     private const val GCM_IV_LENGTH = 12
-    private const val PBKDF2_ITERATIONS = 600_000
+    const val PBKDF2_ITERATIONS = 150_000
     private const val KEY_LENGTH_BITS = 256
     private const val SALT_LENGTH_BYTES = 32
 
@@ -71,10 +71,15 @@ object CryptoManager {
 
     /**
      * Derives a 256-bit AES key from the user's Master Password using PBKDF2.
+     * Uses 150,000 iterations for instant, non-blocking mobile response.
      */
-    fun deriveKeyFromPassword(password: CharArray, salt: ByteArray): SecretKey {
+    fun deriveKeyFromPassword(
+        password: CharArray,
+        salt: ByteArray,
+        iterations: Int = PBKDF2_ITERATIONS
+    ): SecretKey {
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec = PBEKeySpec(password, salt, PBKDF2_ITERATIONS, KEY_LENGTH_BITS)
+        val spec = PBEKeySpec(password, salt, iterations, KEY_LENGTH_BITS)
         val derivedKeyBytes = factory.generateSecret(spec).encoded
         return SecretKeySpec(derivedKeyBytes, "AES")
     }

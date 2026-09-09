@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.text.TextUtils
 import android.view.accessibility.AccessibilityManager
 import android.view.autofill.AutofillManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -85,15 +86,19 @@ fun OnboardingPermissionsScreen(
         isNotificationEnabled = granted
     }
 
-    // Refresh status when returning from system settings screens
+    // Refresh status safely when returning from system settings screens
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                isAutofillEnabled = checkAutofillService(context)
-                isAccessibilityEnabled = checkAccessibilityService(context)
-                isOverlayEnabled = checkOverlayPermission(context)
-                isNotificationEnabled = checkNotificationPermission(context)
-                isBatteryOptIgnored = checkBatteryOptimization(context)
+                try {
+                    isAutofillEnabled = checkAutofillService(context)
+                    isAccessibilityEnabled = checkAccessibilityService(context)
+                    isOverlayEnabled = checkOverlayPermission(context)
+                    isNotificationEnabled = checkNotificationPermission(context)
+                    isBatteryOptIgnored = checkBatteryOptimization(context)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -153,10 +158,24 @@ fun OnboardingPermissionsScreen(
                     icon = Icons.Default.TouchApp,
                     isGranted = isAutofillEnabled,
                     onEnable = {
-                        val intent = Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE).apply {
-                            data = Uri.parse("package:${context.packageName}")
+                        try {
+                            val intent = Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(Settings.ACTION_AUTOFILL_SETTINGS)
+                                context.startActivity(intent)
+                            } catch (e2: Exception) {
+                                try {
+                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e3: Exception) {}
+                            }
                         }
-                        context.startActivity(intent)
                     }
                 )
             }
@@ -168,8 +187,15 @@ fun OnboardingPermissionsScreen(
                     icon = Icons.Default.Visibility,
                     isGranted = isAccessibilityEnabled,
                     onEnable = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        context.startActivity(intent)
+                        try {
+                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(Settings.ACTION_SETTINGS)
+                                context.startActivity(intent)
+                            } catch (e2: Exception) {}
+                        }
                     }
                 )
             }
@@ -181,11 +207,25 @@ fun OnboardingPermissionsScreen(
                     icon = Icons.Default.Layers,
                     isGranted = isOverlayEnabled,
                     onEnable = {
-                        val intent = Intent(
-                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:${context.packageName}")
-                        )
-                        context.startActivity(intent)
+                        try {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                                context.startActivity(intent)
+                            } catch (e2: Exception) {
+                                try {
+                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e3: Exception) {}
+                            }
+                        }
                     }
                 )
             }
@@ -197,8 +237,17 @@ fun OnboardingPermissionsScreen(
                     icon = Icons.Default.Notifications,
                     isGranted = isNotificationEnabled,
                     onEnable = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                }
+                                context.startActivity(intent)
+                            } catch (e2: Exception) {}
                         }
                     }
                 )
@@ -211,10 +260,24 @@ fun OnboardingPermissionsScreen(
                     icon = Icons.Default.Power,
                     isGranted = isBatteryOptIgnored,
                     onEnable = {
-                        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                            data = Uri.parse("package:${context.packageName}")
+                        try {
+                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                context.startActivity(intent)
+                            } catch (e2: Exception) {
+                                try {
+                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e3: Exception) {}
+                            }
                         }
-                        context.startActivity(intent)
                     }
                 )
             }
@@ -324,32 +387,75 @@ fun PermissionItemCard(
 }
 
 private fun checkAutofillService(context: Context): Boolean {
-    val autofillManager = context.getSystemService(AutofillManager::class.java)
-    return autofillManager?.hasEnabledAutofillServices() == true
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val autofillManager = context.getSystemService(AutofillManager::class.java)
+            autofillManager?.hasEnabledAutofillServices() == true
+        } else {
+            false
+        }
+    } catch (e: Throwable) {
+        false
+    }
 }
 
 private fun checkAccessibilityService(context: Context): Boolean {
-    val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-    val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-    return enabledServices.any { it.resolveInfo.serviceInfo.packageName == context.packageName }
+    return try {
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+
+        val colonSplitter = TextUtils.SimpleStringSplitter(':')
+        colonSplitter.setString(enabledServices)
+        while (colonSplitter.hasNext()) {
+            val componentNameString = colonSplitter.next()
+            if (componentNameString.contains(context.packageName, ignoreCase = true)) {
+                return true
+            }
+        }
+        false
+    } catch (e: Throwable) {
+        false
+    }
 }
 
 private fun checkOverlayPermission(context: Context): Boolean {
-    return Settings.canDrawOverlays(context)
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(context)
+        } else {
+            true
+        }
+    } catch (e: Throwable) {
+        false
+    }
 }
 
 private fun checkNotificationPermission(context: Context): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-    } else {
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    } catch (e: Throwable) {
         true
     }
 }
 
 private fun checkBatteryOptimization(context: Context): Boolean {
-    val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-    return powerManager.isIgnoringBatteryOptimizations(context.packageName)
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
+        } else {
+            true
+        }
+    } catch (e: Throwable) {
+        false
+    }
 }

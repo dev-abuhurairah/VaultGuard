@@ -47,21 +47,13 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun VaultGuardTheme(
-    darkTheme: Boolean = true, // Default to sleek dark vault theme
+    darkTheme: Boolean = true, // VaultGuard is exclusively an ultra-secure Dark Mode vault
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+    // VaultGuard consistently preserves the sleek Emerald & Dark Slate vault aesthetic
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = DarkColorScheme,
         typography = Typography,
         content = content
     )

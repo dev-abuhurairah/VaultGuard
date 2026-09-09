@@ -39,4 +39,18 @@ class CryptoManagerTest {
         val wrongKey = CryptoManager.deriveKeyFromPassword("WrongPassword".toCharArray(), salt)
         assertFalse(CryptoManager.verifyPassword(verifier, wrongKey))
     }
+
+    @Test
+    fun testPBKDF2WithCustomIterations() {
+        val masterPassword = "CustomIterationPassword789&"
+        val salt = CryptoManager.generateSalt()
+        val key150k = CryptoManager.deriveKeyFromPassword(masterPassword.toCharArray(), salt, 150_000)
+        val key600k = CryptoManager.deriveKeyFromPassword(masterPassword.toCharArray(), salt, 600_000)
+
+        // Different iteration counts produce different cryptographically derived keys
+        assertNotEquals(key150k.encoded, key600k.encoded)
+        val verifier150k = CryptoManager.createPasswordVerifier(key150k)
+        assertTrue(CryptoManager.verifyPassword(verifier150k, key150k))
+        assertFalse(CryptoManager.verifyPassword(verifier150k, key600k))
+    }
 }

@@ -22,10 +22,12 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -37,7 +39,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,19 +67,21 @@ fun MasterLockScreen(
     val context = LocalContext.current
     val isSetup = remember { repository.isVaultSetup() }
 
+    val coroutineScope = rememberCoroutineScope()
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     val biometricManager = remember { BiometricAuthManager(context) }
     val isBiometricAvailable = remember {
         biometricManager.canAuthenticate() == BiometricAuthManager.BiometricStatus.AVAILABLE
     }
 
-    // Auto-trigger biometric prompt on launch if vault is setup & biometric enabled
+    // Auto-trigger biometric prompt on launch if vault is setup & biometric key is synced
     LaunchedEffect(Unit) {
-        if (isSetup && repository.isBiometricEnabled() && isBiometricAvailable) {
+        if (isSetup && isBiometricAvailable && repository.isBiometricKeySynced()) {
             (context as? FragmentActivity)?.let { activity ->
                 biometricManager.authenticate(
                     activity = activity,
@@ -164,11 +170,17 @@ fun MasterLockScreen(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    if (isSetup) {
-                        if (repository.unlockWithPassword(password)) {
-                            onUnlocked()
-                        } else {
-                            errorMessage = "Incorrect master password. Please try again."
+                    if (isSetup && !isLoading && password.isNotBlank()) {
+                        isLoading = true
+                        errorMessage = null
+                        coroutineScope.launch {
+                            val success = repository.unlockWithPassword(password)
+                            isLoading = false
+                            if (success) {
+                                onUnlocked()
+                            } else {
+                                errorMessage = "Incorrect master password. Please try again."
+                            }
                         }
                     }
                 }
@@ -248,25 +260,54 @@ fun MasterLockScreen(
         }
 
         errorMessage?.let { error ->
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = error,
-                color = Color(0xFFEF4444),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Spacer(modifier = Modifier.height(14.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0x33EF4444)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFF87171),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = error,
+                        color = Color(0xFFFCA5A5),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Main Action Button
+        // Main Action Button (with non-blocking coroutines and loading spinner)
         Button(
             onClick = {
+                if (isLoading) return@Button
+                errorMessage = null
                 if (isSetup) {
-                    if (repository.unlockWithPassword(password)) {
-                        onUnlocked()
-                    } else {
-                        errorMessage = "Incorrect master password. Please try again."
+                    if (password.isBlank()) {
+                        errorMessage = "Please enter your master password."
+                        return@Button
+                    }
+                    isLoading = true
+                    coroutineScope.launch {
+                        val success = repository.unlockWithPassword(password)
+                        isLoading = false
+                        if (success) {
+                            onUnlocked()
+                        } else {
+                            errorMessage = "Incorrect master password. Please try again."
+                        }
                     }
                 } else {
                     if (password.length < 8) {
@@ -274,23 +315,52 @@ fun MasterLockScreen(
                     } else if (password != confirmPassword) {
                         errorMessage = "Passwords do not match."
                     } else {
-                        repository.setupMasterPassword(password)
-                        onUnlocked()
+                        isLoading = true
+                        coroutineScope.launch {
+                            val success = repository.setupMasterPassword(password)
+                            isLoading = false
+                            if (success) {
+                                onUnlocked()
+                            } else {
+                                errorMessage = "Failed to initialize vault encryption. Please try again."
+                            }
+                        }
                     }
                 }
             },
+            enabled = !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF059669),
+                disabledContainerColor = Color(0xFF065F46)
+            ),
             shape = RoundedCornerShape(14.dp)
         ) {
-            Text(
-                text = if (isSetup) "Unlock Vault" else "Create Vault",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (isLoading) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = if (isSetup) "Decrypting Vault..." else "Setting up Encryption...",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            } else {
+                Text(
+                    text = if (isSetup) "Unlock Vault" else "Create Vault",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
 
         // Biometric Quick Unlock Option
@@ -299,6 +369,8 @@ fun MasterLockScreen(
 
             Button(
                 onClick = {
+                    if (isLoading) return@Button
+                    errorMessage = null
                     (context as? FragmentActivity)?.let { activity ->
                         biometricManager.authenticate(
                             activity = activity,
@@ -308,13 +380,21 @@ fun MasterLockScreen(
                                 if (repository.unlockWithBiometric()) {
                                     onUnlocked()
                                 } else {
-                                    errorMessage = "Biometric key not synced. Unlock once with master password."
+                                    errorMessage = "Biometrics not synced yet. Enter master password once to activate."
                                 }
                             },
-                            onError = { _, msg ->
-                                errorMessage = msg.toString()
+                            onError = { code, msg ->
+                                // Ignore cancellation by user
+                                if (code != androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED &&
+                                    code != androidx.biometric.BiometricPrompt.ERROR_NEGATIVE_BUTTON &&
+                                    code != androidx.biometric.BiometricPrompt.ERROR_CANCELED
+                                ) {
+                                    errorMessage = msg.toString()
+                                }
                             },
-                            onFailed = {}
+                            onFailed = {
+                                errorMessage = "Biometric not recognized. Please try again or use password."
+                            }
                         )
                     }
                 },

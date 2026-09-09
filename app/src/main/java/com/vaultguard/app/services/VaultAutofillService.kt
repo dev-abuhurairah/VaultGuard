@@ -72,7 +72,7 @@ class VaultAutofillService : AutofillService() {
                 val responseBuilder = FillResponse.Builder()
 
                 for (item in matchingItems) {
-                    val presentation = RemoteViews(packageName, android.R.layout.simple_list_item_2).apply {
+                    val presentation = RemoteViews(this.packageName, android.R.layout.simple_list_item_2).apply {
                         setTextViewText(android.R.id.text1, item.title)
                         setTextViewText(android.R.id.text2, item.username.ifBlank { "VaultGuard Credential" })
                     }

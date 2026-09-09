@@ -19,12 +19,17 @@ class BiometricAuthManager(private val context: Context) {
         SECURITY_UPDATE_REQUIRED
     }
 
+    companion object {
+        const val AUTHENTICATORS = BiometricManager.Authenticators.BIOMETRIC_STRONG or 
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
+    }
+
     /**
      * Checks if biometric authentication is available and enrolled.
      */
     fun canAuthenticate(): BiometricStatus {
         val biometricManager = BiometricManager.from(context)
-        return when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)) {
+        return when (biometricManager.canAuthenticate(AUTHENTICATORS)) {
             BiometricManager.BIOMETRIC_SUCCESS -> BiometricStatus.AVAILABLE
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> BiometricStatus.NO_HARDWARE
             BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> BiometricStatus.HARDWARE_UNAVAILABLE
@@ -51,7 +56,7 @@ class BiometricAuthManager(private val context: Context) {
             .setTitle(title)
             .setSubtitle(subtitle)
             .setNegativeButtonText(negativeButtonText)
-            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            .setAllowedAuthenticators(AUTHENTICATORS)
             .build()
 
         val biometricPrompt = BiometricPrompt(

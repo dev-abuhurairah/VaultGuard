@@ -45,6 +45,7 @@ class VaultRepository private constructor(
         private const val PREF_SCREEN_PROTECTION = "pref_screen_protection"
         private const val PREF_AUTO_LOCK_MINUTES = "pref_auto_lock_minutes"
         private const val PREF_AUTO_CLEAR_CLIPBOARD_SEC = "pref_auto_clear_clipboard_sec"
+        private const val PREF_PBKDF2_ITERATIONS = "pref_pbkdf2_iterations"
 
         @Volatile
         private var INSTANCE: VaultRepository? = null
@@ -58,8 +59,6 @@ class VaultRepository private constructor(
             }
         }
     }
-
-    private const val PREF_PBKDF2_ITERATIONS = "pref_pbkdf2_iterations"
 
     fun isVaultSetup(): Boolean {
         return prefs.contains(PREF_PASSWORD_VERIFIER) && prefs.contains(PREF_SALT)
@@ -177,10 +176,11 @@ class VaultRepository private constructor(
     /**
      * Binds the master key to the hardware-backed Keystore for biometric unlocking.
      */
-    fun syncBiometricKey(key: SecretKey = activeMasterKey ?: return false): Boolean {
+    fun syncBiometricKey(key: SecretKey? = activeMasterKey): Boolean {
+        val actualKey = key ?: return false
         return try {
             val hwKey = CryptoManager.getOrCreateHardwareMasterKey()
-            val masterKeyBase64 = Base64.getEncoder().encodeToString(key.encoded)
+            val masterKeyBase64 = Base64.getEncoder().encodeToString(actualKey.encoded)
             val encMasterKey = CryptoManager.encrypt(masterKeyBase64, hwKey)
             prefs.edit()
                 .putString("pref_enc_master_key", encMasterKey)

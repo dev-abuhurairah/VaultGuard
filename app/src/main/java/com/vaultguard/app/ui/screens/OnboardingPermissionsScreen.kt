@@ -165,7 +165,7 @@ fun OnboardingPermissionsScreen(
                             context.startActivity(intent)
                         } catch (e: Exception) {
                             try {
-                                val intent = Intent(Settings.ACTION_AUTOFILL_SETTINGS)
+                                val intent = Intent(Settings.ACTION_SETTINGS)
                                 context.startActivity(intent)
                             } catch (e2: Exception) {
                                 try {

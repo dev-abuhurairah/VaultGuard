@@ -58,9 +58,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.core.security.BiometricAuthManager
 import com.vaultguard.app.features.tools.VaultBackupManager
+import com.vaultguard.app.ui.theme.*
 import kotlinx.coroutines.launch
 
 @Composable
@@ -107,7 +109,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
@@ -115,24 +117,25 @@ fun SettingsScreen(
 
         Text(
             text = "Settings",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = "Security policies, auto-fill, and vault configuration",
-            color = Color(0xFF94A3B8),
+            color = TextSecondary,
             fontSize = 13.sp,
             modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
         )
 
         // Security Section
-        Text(text = "SECURITY & PRIVACY", color = Color(0xFF059669), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(text = "SECURITY & PRIVACY", color = PrimaryRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -167,11 +170,12 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Timeouts Section
-        Text(text = "TIMERS & AUTOMATION", color = Color(0xFF059669), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(text = "TIMERS & AUTOMATION", color = PrimaryRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -214,11 +218,12 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         // System & Permissions
-        Text(text = "SYSTEM & DETECTION", color = Color(0xFF059669), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(text = "SYSTEM & DETECTION", color = PrimaryRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -235,11 +240,12 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Vault Backup & Restore
-        Text(text = "BACKUP & RESTORE", color = Color(0xFF059669), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(text = "BACKUP & RESTORE", color = PrimaryRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -261,12 +267,13 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRedContainer),
+            border = BorderStroke(1.dp, PrimaryRed.copy(alpha = 0.3f)),
             shape = RoundedCornerShape(14.dp)
         ) {
-            Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.Lock, contentDescription = null, tint = PrimaryRed, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Lock Vault Now", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+            Text("Lock Vault Now", color = PrimaryRed, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(80.dp))
@@ -276,13 +283,13 @@ fun SettingsScreen(
     if (showBackupDialog) {
         AlertDialog(
             onDismissRequest = { showBackupDialog = false },
-            containerColor = Color(0xFF131B2E),
-            title = { Text("Set Backup Password", color = Color.White, fontWeight = FontWeight.Bold) },
+            containerColor = LightSurface,
+            title = { Text("Set Backup Password", color = TextPrimary, fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     Text(
                         "Your exported file will be encrypted with this password using AES-256-GCM.",
-                        color = Color(0xFF94A3B8),
+                        color = TextSecondary,
                         fontSize = 13.sp
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -293,8 +300,12 @@ fun SettingsScreen(
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedBorderColor = PrimaryRed,
+                            unfocusedBorderColor = LightBorder,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary,
+                            focusedLabelColor = PrimaryRed,
+                            unfocusedLabelColor = TextSecondary
                         )
                     )
                 }
@@ -309,14 +320,14 @@ fun SettingsScreen(
                             exportLauncher.launch("vaultguard_backup_${System.currentTimeMillis()}.json")
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669))
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed)
                 ) {
-                    Text("Export")
+                    Text("Export", color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showBackupDialog = false }) {
-                    Text("Cancel", color = Color(0xFF94A3B8))
+                    Text("Cancel", color = TextSecondary)
                 }
             }
         )
@@ -338,11 +349,11 @@ fun SettingsSwitchRow(
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(24.dp))
+        Icon(icon, contentDescription = null, tint = PrimaryRed, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-            Text(text = subtitle, color = Color(0xFF94A3B8), fontSize = 12.sp)
+            Text(text = title, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text(text = subtitle, color = TextSecondary, fontSize = 12.sp)
         }
         Switch(
             checked = checked,
@@ -350,9 +361,9 @@ fun SettingsSwitchRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFF059669),
-                uncheckedThumbColor = Color(0xFF94A3B8),
-                uncheckedTrackColor = Color(0xFF1E293B)
+                checkedTrackColor = PrimaryRed,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color(0xFFCBD5E1)
             )
         )
     }
@@ -372,13 +383,13 @@ fun SettingsClickableRow(
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(24.dp))
+        Icon(icon, contentDescription = null, tint = PrimaryRed, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-            Text(text = subtitle, color = Color(0xFF94A3B8), fontSize = 12.sp)
+            Text(text = title, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text(text = subtitle, color = TextSecondary, fontSize = 12.sp)
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF64748B))
+        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextSecondary)
     }
 }
 
@@ -388,6 +399,6 @@ fun SettingsDivider() {
         modifier = Modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(Color(0xFF1E293B))
+            .background(LightBorder)
     )
 }

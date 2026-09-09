@@ -40,9 +40,13 @@ object CryptoManager {
      */
     fun getOrCreateHardwareMasterKey(): SecretKey {
         val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
-        if (keyStore.containsAlias(KEYSTORE_ALIAS)) {
-            val entry = keyStore.getEntry(KEYSTORE_ALIAS, null) as KeyStore.SecretKeyEntry
-            return entry.secretKey
+        val existingKey = try {
+            keyStore.getKey(KEYSTORE_ALIAS, null) as? SecretKey
+        } catch (e: Exception) {
+            null
+        }
+        if (existingKey != null) {
+            return existingKey
         }
 
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
@@ -53,7 +57,7 @@ object CryptoManager {
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .setKeySize(KEY_LENGTH_BITS)
-            .setRandomizedEncryptionRequired(true)
+            .setRandomizedEncryptionRequired(false)
             .build()
 
         keyGenerator.init(spec)
@@ -86,16 +90,28 @@ object CryptoManager {
 
     /**
      * Encrypts plaintext string using AES-256-GCM.
+     * Supports both software AES keys and hardware Android Keystore keys (dynamic IV extraction).
      * Returns a Base64 string containing: IV (12 bytes) + Ciphertext + GCM Tag.
      */
     fun encrypt(plainText: String, secretKey: SecretKey): String {
         if (plainText.isEmpty()) return ""
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val iv = ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
-        val parameterSpec = GCMParameterSpec(GCM_TAG_LENGTH, iv)
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec)
+        val iv: ByteArray
+        val cipherText: ByteArray
 
-        val cipherText = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+        try {
+            val genIv = ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
+            val parameterSpec = GCMParameterSpec(GCM_TAG_LENGTH, genIv)
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec)
+            cipherText = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+            iv = cipher.iv ?: genIv
+        } catch (e: java.security.InvalidAlgorithmParameterException) {
+            // Android Keystore key with enforced randomized encryption generating its own IV
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+            cipherText = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+            iv = cipher.iv ?: throw IllegalStateException("Keystore cipher did not produce an IV")
+        }
+
         val combined = ByteArray(iv.size + cipherText.size)
         System.arraycopy(iv, 0, combined, 0, iv.size)
         System.arraycopy(cipherText, 0, combined, iv.size, cipherText.size)

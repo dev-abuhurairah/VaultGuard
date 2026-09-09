@@ -63,9 +63,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.foundation.BorderStroke
 import com.vaultguard.app.services.VaultAccessibilityService
+import com.vaultguard.app.ui.theme.*
 
 @Composable
 fun OnboardingPermissionsScreen(
@@ -110,7 +111,7 @@ fun OnboardingPermissionsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(20.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
@@ -119,13 +120,13 @@ fun OnboardingPermissionsScreen(
             modifier = Modifier
                 .size(56.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF059669).copy(alpha = 0.2f)),
+                .background(PrimaryRedContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Security,
                 contentDescription = null,
-                tint = Color(0xFF10B981),
+                tint = PrimaryRed,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -134,14 +135,14 @@ fun OnboardingPermissionsScreen(
 
         Text(
             text = "Permissions Setup",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = "To auto-detect password fields, confirm autofill, and prompt to save new credentials across all your apps, grant these permissions.",
-            color = Color(0xFF94A3B8),
+            color = TextSecondary,
             fontSize = 14.sp,
             lineHeight = 20.sp,
             modifier = Modifier.padding(top = 8.dp, bottom = 20.dp)
@@ -290,7 +291,7 @@ fun OnboardingPermissionsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669)),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
             shape = RoundedCornerShape(14.dp)
         ) {
             Text(
@@ -300,7 +301,7 @@ fun OnboardingPermissionsScreen(
                 color = Color.White
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.Default.ChevronRight, contentDescription = null)
+            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.White)
         }
     }
 }
@@ -314,7 +315,8 @@ fun PermissionItemCard(
     onEnable: () -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+        colors = CardDefaults.cardColors(containerColor = LightSurface),
+        border = BorderStroke(1.dp, LightBorder),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -328,13 +330,13 @@ fun PermissionItemCard(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isGranted) Color(0xFF059669).copy(alpha = 0.2f) else Color(0xFF1E293B)),
+                    .background(if (isGranted) PrimaryRedContainer else LightSurfaceElevated),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isGranted) Color(0xFF10B981) else Color(0xFF94A3B8),
+                    tint = if (isGranted) PrimaryRed else TextSecondary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -344,14 +346,14 @@ fun PermissionItemCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    color = Color.White,
+                    color = TextPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = description,
-                    color = Color(0xFF94A3B8),
+                    color = TextSecondary,
                     fontSize = 12.sp,
                     lineHeight = 16.sp
                 )
@@ -364,7 +366,7 @@ fun PermissionItemCard(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF059669)),
+                        .background(PrimaryRed),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -377,9 +379,10 @@ fun PermissionItemCard(
             } else {
                 OutlinedButton(
                     onClick = onEnable,
+                    border = BorderStroke(1.dp, PrimaryRed),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Enable", color = Color(0xFF10B981), fontSize = 13.sp)
+                    Text("Enable", color = PrimaryRed, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

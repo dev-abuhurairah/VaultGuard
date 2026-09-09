@@ -170,8 +170,8 @@ fun MainBottomNavContainer(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Color(0xFF131B2E),
-                contentColor = Color.White
+                containerColor = Color(0xFFFFFFFF),
+                contentColor = Color(0xFF0F172A)
             ) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
@@ -215,7 +215,7 @@ fun MainBottomNavContainer(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFF0B0F19))
+                .background(Color(0xFFF8FAFC))
         ) {
             when (selectedTab) {
                 0 -> VaultDashboardScreen(
@@ -245,9 +245,9 @@ fun MainBottomNavContainer(
 
 @Composable
 private fun navItemColors() = NavigationBarItemDefaults.colors(
-    selectedIconColor = Color.White,
-    selectedTextColor = Color.White,
-    indicatorColor = Color(0xFF059669),
-    unselectedIconColor = Color(0xFF94A3B8),
-    unselectedTextColor = Color(0xFF94A3B8)
+    selectedIconColor = Color(0xFFDC2626),
+    selectedTextColor = Color(0xFFDC2626),
+    indicatorColor = Color(0xFFFEE2E2),
+    unselectedIconColor = Color(0xFF64748B),
+    unselectedTextColor = Color(0xFF64748B)
 )

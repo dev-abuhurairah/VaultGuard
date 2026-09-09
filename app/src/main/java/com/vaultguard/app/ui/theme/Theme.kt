@@ -11,49 +11,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = EmeraldAccent,
+private val RedLightColorScheme = lightColorScheme(
+    primary = PrimaryRed,
     onPrimary = Color.White,
-    primaryContainer = PrimaryBlue,
-    onPrimaryContainer = Color.White,
-    secondary = EmeraldLight,
-    onSecondary = Color.Black,
-    background = DarkBg,
-    onBackground = TextPrimary,
-    surface = DarkSurface,
-    onSurface = TextPrimary,
-    surfaceVariant = DarkSurfaceElevated,
-    onSurfaceVariant = TextSecondary,
-    error = DangerRed,
-    onError = Color.White
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = PrimaryBlue,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFFE2E8F0),
-    onPrimaryContainer = PrimaryBlue,
-    secondary = EmeraldAccent,
+    primaryContainer = PrimaryRedContainer,
+    onPrimaryContainer = PrimaryRedOnContainer,
+    secondary = PrimaryRedDark,
     onSecondary = Color.White,
-    background = Color(0xFFF8FAFC),
-    onBackground = Color(0xFF0F172A),
-    surface = Color.White,
-    onSurface = Color(0xFF0F172A),
-    surfaceVariant = Color(0xFFF1F5F9),
-    onSurfaceVariant = Color(0xFF64748B),
+    secondaryContainer = Color(0xFFF1F5F9),
+    onSecondaryContainer = TextPrimary,
+    background = LightBg,
+    onBackground = TextPrimary,
+    surface = LightSurface,
+    onSurface = TextPrimary,
+    surfaceVariant = LightSurfaceElevated,
+    onSurfaceVariant = TextSecondary,
+    outline = LightBorder,
     error = DangerRed,
-    onError = Color.White
+    onError = Color.White,
+    errorContainer = Color(0xFFFEE2E2),
+    onErrorContainer = Color(0xFF991B1B)
 )
 
 @Composable
 fun VaultGuardTheme(
-    darkTheme: Boolean = true, // VaultGuard is exclusively an ultra-secure Dark Mode vault
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    // VaultGuard consistently preserves the sleek Emerald & Dark Slate vault aesthetic
+    // VaultGuard consistently renders the sleek Red & Light aesthetic
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = RedLightColorScheme,
         typography = Typography,
         content = content
     )

@@ -41,9 +41,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.vaultguard.app.core.model.VaultItem
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.features.tools.SecurityAuditManager
+import com.vaultguard.app.ui.theme.*
 
 @Composable
 fun SecurityAuditScreen(
@@ -58,21 +60,21 @@ fun SecurityAuditScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "Security Audit",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = "Watchtower scans your vault to detect vulnerable and reused passwords",
-            color = Color(0xFF94A3B8),
+            color = TextSecondary,
             fontSize = 13.sp,
             modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
         )
@@ -80,7 +82,8 @@ fun SecurityAuditScreen(
         // Security Score Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             shape = RoundedCornerShape(20.dp),
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
@@ -94,7 +97,7 @@ fun SecurityAuditScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Vault Health Score",
-                        color = Color(0xFF94A3B8),
+                        color = TextSecondary,
                         fontSize = 13.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -104,14 +107,14 @@ fun SecurityAuditScreen(
                             auditResult.securityScorePercentage >= 65 -> "Moderate Risk"
                             else -> "Action Required"
                         },
-                        color = Color.White,
+                        color = TextPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "${auditResult.totalAccounts} total accounts analyzed",
-                        color = Color(0xFF64748B),
+                        color = TextSecondary,
                         fontSize = 12.sp
                     )
                 }
@@ -121,9 +124,9 @@ fun SecurityAuditScreen(
                     modifier = Modifier.size(72.dp)
                 ) {
                     val scoreColor = when {
-                        auditResult.securityScorePercentage >= 85 -> Color(0xFF059669)
-                        auditResult.securityScorePercentage >= 65 -> Color(0xFFF59E0B)
-                        else -> Color(0xFFEF4444)
+                        auditResult.securityScorePercentage >= 85 -> SuccessGreen
+                        auditResult.securityScorePercentage >= 65 -> WarningOrange
+                        else -> PrimaryRed
                     }
 
                     CircularProgressIndicator(
@@ -131,11 +134,11 @@ fun SecurityAuditScreen(
                         modifier = Modifier.fillMaxSize(),
                         color = scoreColor,
                         strokeWidth = 6.dp,
-                        trackColor = Color(0xFF1E293B)
+                        trackColor = Color(0xFFE2E8F0)
                     )
                     Text(
                         text = "${auditResult.securityScorePercentage}%",
-                        color = Color.White,
+                        color = TextPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -153,19 +156,19 @@ fun SecurityAuditScreen(
             AuditMetricBox(
                 title = "Weak",
                 count = auditResult.weakPasswords.size,
-                color = Color(0xFFEF4444),
+                color = PrimaryRed,
                 modifier = Modifier.weight(1f)
             )
             AuditMetricBox(
                 title = "Reused",
                 count = auditResult.reusedPasswords.values.flatten().size,
-                color = Color(0xFFF59E0B),
+                color = WarningOrange,
                 modifier = Modifier.weight(1f)
             )
             AuditMetricBox(
                 title = "No 2FA",
                 count = auditResult.missing2FaLogins.size,
-                color = Color(0xFF38BDF8),
+                color = InfoBlue,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -175,7 +178,7 @@ fun SecurityAuditScreen(
         // Flagged Items List
         Text(
             text = "Issues Requiring Attention",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -184,7 +187,8 @@ fun SecurityAuditScreen(
 
         if (auditResult.weakPasswords.isEmpty() && auditResult.reusedPasswords.isEmpty()) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+                colors = CardDefaults.cardColors(containerColor = LightSurface),
+                border = BorderStroke(1.dp, LightBorder),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -197,13 +201,13 @@ fun SecurityAuditScreen(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Color(0xFF10B981),
+                        tint = SuccessGreen,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Great job! No weak or reused passwords found.",
-                        color = Color(0xFF94A3B8),
+                        color = TextSecondary,
                         fontSize = 14.sp
                     )
                 }
@@ -218,7 +222,7 @@ fun SecurityAuditScreen(
                     AuditItemRow(
                         item = item,
                         warning = "Weak password (< 50 bits)",
-                        warningColor = Color(0xFFEF4444),
+                        warningColor = PrimaryRed,
                         onClick = { onEditItem(item.id) }
                     )
                 }
@@ -228,7 +232,7 @@ fun SecurityAuditScreen(
                         AuditItemRow(
                             item = item,
                             warning = "Reused password across accounts",
-                            warningColor = Color(0xFFF59E0B),
+                            warningColor = WarningOrange,
                             onClick = { onEditItem(item.id) }
                         )
                     }
@@ -247,7 +251,8 @@ fun AuditMetricBox(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+        colors = CardDefaults.cardColors(containerColor = LightSurface),
+        border = BorderStroke(1.dp, LightBorder),
         shape = RoundedCornerShape(14.dp)
     ) {
         Column(
@@ -256,7 +261,7 @@ fun AuditMetricBox(
         ) {
             Text(text = "$count", color = color, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = title, color = Color(0xFF94A3B8), fontSize = 12.sp)
+            Text(text = title, color = TextSecondary, fontSize = 12.sp)
         }
     }
 }
@@ -273,7 +278,8 @@ fun AuditItemRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E))
+        colors = CardDefaults.cardColors(containerColor = LightSurface),
+        border = BorderStroke(1.dp, LightBorder)
     ) {
         Row(
             modifier = Modifier
@@ -299,12 +305,12 @@ fun AuditItemRow(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = item.title, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(text = warning, color = warningColor, fontSize = 12.sp)
             }
 
-            Icon(Icons.Default.ChevronRight, contentDescription = "Edit", tint = Color(0xFF64748B))
+            Icon(Icons.Default.ChevronRight, contentDescription = "Edit", tint = TextSecondary)
         }
     }
 }

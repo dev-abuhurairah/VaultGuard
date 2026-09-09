@@ -45,10 +45,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.vaultguard.app.core.model.VaultItem
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.core.security.SecureClipboardHelper
 import com.vaultguard.app.features.tools.TotpGenerator
+import com.vaultguard.app.ui.theme.*
 import kotlinx.coroutines.delay
 
 @Composable
@@ -67,21 +69,21 @@ fun TotpAuthenticatorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "2FA Authenticator",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = "Time-based one-time passwords refreshed every 30 seconds",
-            color = Color(0xFF94A3B8),
+            color = TextSecondary,
             fontSize = 13.sp,
             modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
         )
@@ -97,19 +99,20 @@ fun TotpAuthenticatorScreen(
                     Icon(
                         imageVector = Icons.Default.LockClock,
                         contentDescription = null,
-                        tint = Color(0xFF334155),
+                        tint = LightBorder,
                         modifier = Modifier.size(64.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "No 2FA accounts added",
-                        color = Color(0xFF94A3B8),
-                        fontSize = 16.sp
+                        color = TextPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Add a 2FA secret key to any item in your vault to generate codes",
-                        color = Color(0xFF64748B),
+                        color = TextSecondary,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(horizontal = 32.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -157,7 +160,8 @@ fun TotpCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+        colors = CardDefaults.cardColors(containerColor = LightSurface),
+        border = BorderStroke(1.dp, LightBorder),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
@@ -169,14 +173,14 @@ fun TotpCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = item.title,
-                        color = Color.White,
+                        color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     if (item.username.isNotBlank()) {
                         Text(
                             text = item.username,
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontSize = 13.sp
                         )
                     }
@@ -187,14 +191,14 @@ fun TotpCard(
                         CircularProgressIndicator(
                             progress = { totp.progress },
                             modifier = Modifier.size(24.dp),
-                            color = if (totp.remainingSeconds <= 5) Color(0xFFEF4444) else Color(0xFF10B981),
+                            color = if (totp.remainingSeconds <= 5) PrimaryRedDark else PrimaryRed,
                             strokeWidth = 3.dp,
-                            trackColor = Color(0xFF1E293B)
+                            trackColor = Color(0xFFE2E8F0)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "${totp.remainingSeconds}s",
-                            color = if (totp.remainingSeconds <= 5) Color(0xFFEF4444) else Color(0xFF94A3B8),
+                            color = if (totp.remainingSeconds <= 5) PrimaryRedDark else TextSecondary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -218,7 +222,7 @@ fun TotpCard(
 
                     Text(
                         text = formattedCode,
-                        color = Color(0xFF38BDF8),
+                        color = PrimaryRed,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,
@@ -230,12 +234,12 @@ fun TotpCard(
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF1E293B))
+                            .background(PrimaryRedContainer)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy 2FA Code",
-                            tint = Color(0xFF10B981),
+                            tint = PrimaryRed,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -243,7 +247,7 @@ fun TotpCard(
             } ?: run {
                 Text(
                     text = "Invalid 2FA Secret Key",
-                    color = Color(0xFFEF4444),
+                    color = PrimaryRed,
                     fontSize = 14.sp
                 )
             }

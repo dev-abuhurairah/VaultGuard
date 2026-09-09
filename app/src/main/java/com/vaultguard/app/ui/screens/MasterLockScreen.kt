@@ -58,6 +58,9 @@ import androidx.fragment.app.FragmentActivity
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.core.security.BiometricAuthManager
 import com.vaultguard.app.features.tools.PasswordGenerator
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.OutlinedButton
+import com.vaultguard.app.ui.theme.*
 
 @Composable
 fun MasterLockScreen(
@@ -102,7 +105,7 @@ fun MasterLockScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -112,13 +115,13 @@ fun MasterLockScreen(
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF059669).copy(alpha = 0.15f)),
+                .background(PrimaryRedContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Security,
                 contentDescription = null,
-                tint = Color(0xFF10B981),
+                tint = PrimaryRed,
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -127,7 +130,7 @@ fun MasterLockScreen(
 
         Text(
             text = if (isSetup) "Unlock Vault" else "Create Master Password",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
@@ -137,7 +140,7 @@ fun MasterLockScreen(
                 "Enter your master password to decrypt your vault"
             else
                 "This password encrypts all your credentials on this device. Do not forget it.",
-            color = Color(0xFF94A3B8),
+            color = TextSecondary,
             fontSize = 13.sp,
             lineHeight = 18.sp,
             modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -152,14 +155,14 @@ fun MasterLockScreen(
             },
             label = { Text("Master Password") },
             leadingIcon = {
-                Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF94A3B8))
+                Icon(Icons.Default.Lock, contentDescription = null, tint = TextSecondary)
             },
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = Color(0xFF94A3B8)
+                        tint = TextSecondary
                     )
                 }
             },
@@ -188,12 +191,14 @@ fun MasterLockScreen(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF059669),
-                unfocusedBorderColor = Color(0xFF334155),
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedLabelColor = Color(0xFF10B981),
-                unfocusedLabelColor = Color(0xFF94A3B8)
+                focusedBorderColor = PrimaryRed,
+                unfocusedBorderColor = LightBorder,
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                focusedLabelColor = PrimaryRed,
+                unfocusedLabelColor = TextSecondary,
+                focusedContainerColor = LightSurface,
+                unfocusedContainerColor = LightSurface
             ),
             shape = RoundedCornerShape(14.dp)
         )
@@ -208,7 +213,7 @@ fun MasterLockScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Password Strength", color = Color(0xFF94A3B8), fontSize = 12.sp)
+                    Text(text = "Password Strength", color = TextSecondary, fontSize = 12.sp)
                     Text(
                         text = strength.label,
                         color = strength.toComposeColor(),
@@ -224,7 +229,7 @@ fun MasterLockScreen(
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
                     color = strength.toComposeColor(),
-                    trackColor = Color(0xFF1E293B)
+                    trackColor = Color(0xFFE2E8F0)
                 )
             }
 
@@ -238,7 +243,7 @@ fun MasterLockScreen(
                 },
                 label = { Text("Confirm Master Password") },
                 leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF94A3B8))
+                    Icon(Icons.Default.Lock, contentDescription = null, tint = TextSecondary)
                 },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
@@ -248,12 +253,14 @@ fun MasterLockScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF059669),
-                    unfocusedBorderColor = Color(0xFF334155),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedLabelColor = Color(0xFF10B981),
-                    unfocusedLabelColor = Color(0xFF94A3B8)
+                    focusedBorderColor = PrimaryRed,
+                    unfocusedBorderColor = LightBorder,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary,
+                    focusedLabelColor = PrimaryRed,
+                    unfocusedLabelColor = TextSecondary,
+                    focusedContainerColor = LightSurface,
+                    unfocusedContainerColor = LightSurface
                 ),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -262,8 +269,9 @@ fun MasterLockScreen(
         errorMessage?.let { error ->
             Spacer(modifier = Modifier.height(14.dp))
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0x33EF4444)),
+                colors = CardDefaults.cardColors(containerColor = PrimaryRedContainer),
                 shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, PrimaryRed.copy(alpha = 0.2f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -273,13 +281,13 @@ fun MasterLockScreen(
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = null,
-                        tint = Color(0xFFF87171),
+                        tint = PrimaryRed,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = error,
-                        color = Color(0xFFFCA5A5),
+                        color = PrimaryRedOnContainer,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -333,8 +341,8 @@ fun MasterLockScreen(
                 .fillMaxWidth()
                 .height(52.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF059669),
-                disabledContainerColor = Color(0xFF065F46)
+                containerColor = PrimaryRed,
+                disabledContainerColor = PrimaryRedLight.copy(alpha = 0.5f)
             ),
             shape = RoundedCornerShape(14.dp)
         ) {
@@ -367,9 +375,9 @@ fun MasterLockScreen(
         if (isSetup && isBiometricAvailable) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
+            OutlinedButton(
                 onClick = {
-                    if (isLoading) return@Button
+                    if (isLoading) return@OutlinedButton
                     errorMessage = null
                     (context as? FragmentActivity)?.let { activity ->
                         biometricManager.authenticate(
@@ -401,13 +409,17 @@ fun MasterLockScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = LightSurface,
+                    contentColor = TextPrimary
+                ),
+                border = BorderStroke(1.dp, LightBorder),
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Fingerprint,
                     contentDescription = "Biometric Unlock",
-                    tint = Color(0xFF10B981),
+                    tint = PrimaryRed,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -415,7 +427,7 @@ fun MasterLockScreen(
                     text = "Unlock with Biometrics",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = TextPrimary
                 )
             }
         }

@@ -63,11 +63,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.vaultguard.app.core.model.VaultCategory
 import com.vaultguard.app.core.model.VaultItem
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.core.security.SecureClipboardHelper
 import com.vaultguard.app.features.tools.TotpGenerator
+import com.vaultguard.app.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -104,7 +106,7 @@ fun VaultDashboardScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
     ) {
         Column(
             modifier = Modifier
@@ -124,20 +126,20 @@ fun VaultDashboardScreen(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF059669).copy(alpha = 0.2f)),
+                            .background(PrimaryRedContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Security,
                             contentDescription = null,
-                            tint = Color(0xFF10B981),
+                            tint = PrimaryRed,
                             modifier = Modifier.size(22.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "VaultGuard",
-                        color = Color.White,
+                        color = TextPrimary,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -148,12 +150,12 @@ fun VaultDashboardScreen(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF1E293B))
+                        .background(LightSurfaceElevated)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Lock,
                         contentDescription = "Lock Vault",
-                        tint = Color(0xFF94A3B8),
+                        tint = TextSecondary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -165,20 +167,20 @@ fun VaultDashboardScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search your vault...", color = Color(0xFF64748B)) },
+                placeholder = { Text("Search your vault...", color = TextSecondary) },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF64748B))
+                    Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
                 },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF059669),
-                    unfocusedBorderColor = Color(0xFF1E293B),
-                    focusedContainerColor = Color(0xFF131B2E),
-                    unfocusedContainerColor = Color(0xFF131B2E),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedBorderColor = PrimaryRed,
+                    unfocusedBorderColor = LightBorder,
+                    focusedContainerColor = LightSurface,
+                    unfocusedContainerColor = LightSurface,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
                 )
             )
 
@@ -244,19 +246,20 @@ fun VaultDashboardScreen(
                         Icon(
                             imageVector = Icons.Default.Key,
                             contentDescription = null,
-                            tint = Color(0xFF334155),
+                            tint = LightBorder,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = if (searchQuery.isNotBlank()) "No matching items found" else "Your vault is empty",
-                            color = Color(0xFF94A3B8),
-                            fontSize = 16.sp
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Tap + below to add passwords or notes",
-                            color = Color(0xFF64748B),
+                            color = TextSecondary,
                             fontSize = 13.sp
                         )
                     }
@@ -296,11 +299,11 @@ fun VaultDashboardScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp),
-            containerColor = Color(0xFF059669),
+            containerColor = PrimaryRed,
             contentColor = Color.White,
             shape = CircleShape
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Item", modifier = Modifier.size(28.dp))
+            Icon(Icons.Default.Add, contentDescription = "Add Item", modifier = Modifier.size(28.dp), tint = Color.White)
         }
     }
 }
@@ -330,7 +333,8 @@ fun VaultItemCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
-        color = Color(0xFF131B2E),
+        color = LightSurface,
+        border = BorderStroke(1.dp, LightBorder),
         tonalElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
@@ -360,14 +364,14 @@ fun VaultItemCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = item.title,
-                        color = Color.White,
+                        color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = item.username.ifBlank { item.websiteUrl.ifBlank { item.category.displayName } },
-                        color = Color(0xFF94A3B8),
+                        color = TextSecondary,
                         fontSize = 13.sp,
                         maxLines = 1
                     )
@@ -382,7 +386,7 @@ fun VaultItemCard(
                         Icon(
                             Icons.Default.Person,
                             contentDescription = "Copy Username",
-                            tint = Color(0xFF94A3B8),
+                            tint = TextSecondary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -396,7 +400,7 @@ fun VaultItemCard(
                         Icon(
                             Icons.Outlined.ContentCopy,
                             contentDescription = "Copy Password",
-                            tint = Color(0xFF10B981),
+                            tint = PrimaryRed,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -409,7 +413,7 @@ fun VaultItemCard(
                     Icon(
                         imageVector = if (item.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
                         contentDescription = "Favorite",
-                        tint = if (item.isFavorite) Color(0xFFF59E0B) else Color(0xFF64748B),
+                        tint = if (item.isFavorite) Color(0xFFF59E0B) else TextSecondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -422,7 +426,7 @@ fun VaultItemCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF0F172A))
+                        .background(LightSurfaceElevated)
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -430,12 +434,12 @@ fun VaultItemCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "2FA Code: ",
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontSize = 12.sp
                         )
                         Text(
                             text = "${totp.code.take(3)} ${totp.code.takeLast(3)}",
-                            color = Color(0xFF38BDF8),
+                            color = PrimaryRed,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace
@@ -446,14 +450,14 @@ fun VaultItemCard(
                         CircularProgressIndicator(
                             progress = { totp.progress },
                             modifier = Modifier.size(18.dp),
-                            color = if (totp.remainingSeconds <= 5) Color(0xFFEF4444) else Color(0xFF38BDF8),
+                            color = if (totp.remainingSeconds <= 5) PrimaryRedDark else PrimaryRed,
                             strokeWidth = 2.dp,
-                            trackColor = Color(0xFF1E293B)
+                            trackColor = Color(0xFFE2E8F0)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "${totp.remainingSeconds}s",
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontSize = 11.sp
                         )
                     }
@@ -487,8 +491,8 @@ private fun getCategoryColor(category: VaultCategory): Color {
 
 @Composable
 private fun filterChipColors() = FilterChipDefaults.filterChipColors(
-    containerColor = Color(0xFF131B2E),
-    labelColor = Color(0xFF94A3B8),
-    selectedContainerColor = Color(0xFF059669),
+    containerColor = LightSurface,
+    labelColor = TextSecondary,
+    selectedContainerColor = PrimaryRed,
     selectedLabelColor = Color.White
 )

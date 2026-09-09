@@ -56,7 +56,8 @@ import com.vaultguard.app.core.model.VaultItem
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.core.security.BiometricAuthManager
 import com.vaultguard.app.services.VaultAccessibilityService
-import com.vaultguard.app.ui.theme.VaultGuardTheme
+import androidx.compose.foundation.BorderStroke
+import com.vaultguard.app.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -194,7 +195,8 @@ class PromptDialogActivity : FragmentActivity() {
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             elevation = CardDefaults.cardElevation(16.dp)
         ) {
             Column(
@@ -210,26 +212,26 @@ class PromptDialogActivity : FragmentActivity() {
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF059669).copy(alpha = 0.2f)),
+                            .background(PrimaryRedContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Security,
                             contentDescription = null,
-                            tint = Color(0xFF10B981)
+                            tint = PrimaryRed
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "VaultGuard Autofill",
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = appName,
-                            color = Color.White,
+                            color = TextPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -240,21 +242,22 @@ class PromptDialogActivity : FragmentActivity() {
 
                 matchedItem?.let { item ->
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                        colors = CardDefaults.cardColors(containerColor = LightSurfaceElevated),
                         shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, LightBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
                                 text = item.username.ifBlank { "No username" },
-                                color = Color.White,
+                                color = TextPrimary,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 15.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "••••••••••••",
-                                color = Color(0xFF94A3B8),
+                                color = TextSecondary,
                                 fontSize = 13.sp
                             )
                         }
@@ -269,27 +272,32 @@ class PromptDialogActivity : FragmentActivity() {
                         OutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, LightBorder)
                         ) {
-                            Text("Cancel", color = Color(0xFF94A3B8))
+                            Text("Cancel", color = TextSecondary)
                         }
 
                         Button(
                             onClick = { onConfirm(item) },
                             modifier = Modifier.weight(1.5f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669))
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed)
                         ) {
-                            Icon(Icons.Default.Fingerprint, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Fingerprint, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Autofill", fontWeight = FontWeight.Bold)
+                            Text("Autofill", fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
                 } ?: run {
-                    Text("No matching credentials found for $appName", color = Color(0xFF94A3B8))
+                    Text("No matching credentials found for $appName", color = TextSecondary)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                        Text("Dismiss")
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed)
+                    ) {
+                        Text("Dismiss", color = Color.White)
                     }
                 }
             }
@@ -310,7 +318,8 @@ class PromptDialogActivity : FragmentActivity() {
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             elevation = CardDefaults.cardElevation(16.dp)
         ) {
             Column(
@@ -326,26 +335,26 @@ class PromptDialogActivity : FragmentActivity() {
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF3B82F6).copy(alpha = 0.2f)),
+                            .background(PrimaryRedContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            tint = Color(0xFF60A5FA)
+                            tint = PrimaryRed
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Save to VaultGuard?",
-                            color = Color.White,
+                            color = TextPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = "Save password for $appName",
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontSize = 13.sp
                         )
                     }
@@ -354,21 +363,22 @@ class PromptDialogActivity : FragmentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                    colors = CardDefaults.cardColors(containerColor = LightSurfaceElevated),
                     shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, LightBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
                             text = if (username.isNotBlank()) username else "Account",
-                            color = Color.White,
+                            color = TextPrimary,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Password: ••••••••",
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontSize = 13.sp
                         )
                     }
@@ -383,20 +393,21 @@ class PromptDialogActivity : FragmentActivity() {
                     OutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, LightBorder)
                     ) {
-                        Text("Not Now", color = Color(0xFF94A3B8))
+                        Text("Not Now", color = TextSecondary)
                     }
 
                     Button(
                         onClick = { onSave(username, password) },
                         modifier = Modifier.weight(1.5f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669))
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed)
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Save Login", fontWeight = FontWeight.Bold)
+                        Text("Save Login", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }

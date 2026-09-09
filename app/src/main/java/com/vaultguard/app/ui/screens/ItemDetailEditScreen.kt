@@ -60,6 +60,7 @@ import com.vaultguard.app.core.model.VaultCategory
 import com.vaultguard.app.core.model.VaultItem
 import com.vaultguard.app.core.repository.VaultRepository
 import com.vaultguard.app.features.tools.PasswordGenerator
+import com.vaultguard.app.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -110,7 +111,7 @@ fun ItemDetailEditScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(16.dp)
     ) {
         // Top Navigation Bar
@@ -121,12 +122,12 @@ fun ItemDetailEditScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
                 }
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = if (existingItem == null) "New Item" else "Edit Item",
-                    color = Color.White,
+                    color = TextPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -137,7 +138,7 @@ fun ItemDetailEditScreen(
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) Color(0xFFF59E0B) else Color(0xFF94A3B8)
+                        tint = if (isFavorite) Color(0xFFF59E0B) else TextSecondary
                     )
                 }
 
@@ -149,7 +150,7 @@ fun ItemDetailEditScreen(
                             onNavigateBack()
                         }
                     }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFEF4444))
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = PrimaryRed)
                     }
                 }
             }
@@ -231,20 +232,20 @@ fun ItemDetailEditScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF94A3B8)) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = TextSecondary) },
                 trailingIcon = {
                     Row {
                         IconButton(onClick = {
                             // Quick 16-char strong password generator
                             password = PasswordGenerator.generate()
                         }) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = "Generate", tint = Color(0xFF10B981))
+                            Icon(Icons.Default.AutoAwesome, contentDescription = "Generate", tint = PrimaryRed)
                         }
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = null,
-                                tint = Color(0xFF94A3B8)
+                                tint = TextSecondary
                             )
                         }
                     }
@@ -264,7 +265,7 @@ fun ItemDetailEditScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Strength", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                    Text(text = "Strength", color = TextSecondary, fontSize = 11.sp)
                     Text(text = strength.label, color = strength.toComposeColor(), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(3.dp))
@@ -272,7 +273,7 @@ fun ItemDetailEditScreen(
                     progress = { (strength.score + 1) / 5f },
                     modifier = Modifier.fillMaxWidth(),
                     color = strength.toComposeColor(),
-                    trackColor = Color(0xFF1E293B)
+                    trackColor = Color(0xFFE2E8F0)
                 )
             }
 
@@ -362,24 +363,24 @@ fun ItemDetailEditScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669)),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
             shape = RoundedCornerShape(14.dp)
         ) {
-            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.White)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Save to Vault", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Save to Vault", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }
 
 @Composable
 private fun defaultTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = Color(0xFF059669),
-    unfocusedBorderColor = Color(0xFF334155),
-    focusedContainerColor = Color(0xFF131B2E),
-    unfocusedContainerColor = Color(0xFF131B2E),
-    focusedTextColor = Color.White,
-    unfocusedTextColor = Color.White,
-    focusedLabelColor = Color(0xFF10B981),
-    unfocusedLabelColor = Color(0xFF94A3B8)
+    focusedBorderColor = PrimaryRed,
+    unfocusedBorderColor = LightBorder,
+    focusedContainerColor = LightSurface,
+    unfocusedContainerColor = LightSurface,
+    focusedTextColor = TextPrimary,
+    unfocusedTextColor = TextPrimary,
+    focusedLabelColor = PrimaryRed,
+    unfocusedLabelColor = TextSecondary
 )

@@ -47,8 +47,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.vaultguard.app.core.security.SecureClipboardHelper
 import com.vaultguard.app.features.tools.PasswordGenerator
+import com.vaultguard.app.ui.theme.*
 
 @Composable
 fun PasswordGeneratorScreen() {
@@ -85,7 +87,7 @@ fun PasswordGeneratorScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F19))
+            .background(LightBg)
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
@@ -93,14 +95,14 @@ fun PasswordGeneratorScreen() {
 
         Text(
             text = "Password Generator",
-            color = Color.White,
+            color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = "Generate strong, cryptographically secure passwords or passphrases",
-            color = Color(0xFF94A3B8),
+            color = TextSecondary,
             fontSize = 13.sp,
             modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
         )
@@ -108,14 +110,15 @@ fun PasswordGeneratorScreen() {
         // Password Display Box
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2E)),
+            colors = CardDefaults.cardColors(containerColor = LightSurface),
+            border = BorderStroke(1.dp, LightBorder),
             shape = RoundedCornerShape(20.dp),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = generatedPassword,
-                    color = Color.White,
+                    color = TextPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,
@@ -144,7 +147,7 @@ fun PasswordGeneratorScreen() {
                         IconButton(
                             onClick = { generatedPassword = generateCurrentPassword() }
                         ) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Regenerate", tint = Color(0xFF10B981))
+                            Icon(Icons.Default.Refresh, contentDescription = "Regenerate", tint = PrimaryRed)
                         }
 
                         IconButton(
@@ -153,7 +156,7 @@ fun PasswordGeneratorScreen() {
                                 Toast.makeText(context, "Password copied to clipboard", Toast.LENGTH_SHORT).show()
                             }
                         ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color(0xFF38BDF8))
+                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = PrimaryRed)
                         }
                     }
                 }
@@ -167,7 +170,7 @@ fun PasswordGeneratorScreen() {
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
                     color = strength.toComposeColor(),
-                    trackColor = Color(0xFF1E293B)
+                    trackColor = Color(0xFFE2E8F0)
                 )
             }
         }
@@ -190,7 +193,7 @@ fun PasswordGeneratorScreen() {
         if (isPassphrase) {
             Text(
                 text = "Word Count: ${wordCount.toInt()} words",
-                color = Color.White,
+                color = TextPrimary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp
             )
@@ -203,15 +206,15 @@ fun PasswordGeneratorScreen() {
                 valueRange = 3f..8f,
                 steps = 4,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF059669),
-                    activeTrackColor = Color(0xFF059669),
-                    inactiveTrackColor = Color(0xFF1E293B)
+                    thumbColor = PrimaryRed,
+                    activeTrackColor = PrimaryRed,
+                    inactiveTrackColor = Color(0xFFE2E8F0)
                 )
             )
         } else {
             Text(
                 text = "Password Length: ${length.toInt()} characters",
-                color = Color.White,
+                color = TextPrimary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp
             )
@@ -224,9 +227,9 @@ fun PasswordGeneratorScreen() {
                 valueRange = 8f..64f,
                 steps = 55,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF059669),
-                    activeTrackColor = Color(0xFF059669),
-                    inactiveTrackColor = Color(0xFF1E293B)
+                    thumbColor = PrimaryRed,
+                    activeTrackColor = PrimaryRed,
+                    inactiveTrackColor = Color(0xFFE2E8F0)
                 )
             )
 
@@ -288,12 +291,12 @@ fun PasswordGeneratorScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669)),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
             shape = RoundedCornerShape(14.dp)
         ) {
-            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Copy Password", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Copy Password", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(80.dp))
@@ -315,9 +318,9 @@ fun GeneratorToggleRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text(text = title, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Medium)
             if (subtitle != null) {
-                Text(text = subtitle, color = Color(0xFF94A3B8), fontSize = 12.sp)
+                Text(text = subtitle, color = TextSecondary, fontSize = 12.sp)
             }
         }
         Switch(
@@ -325,9 +328,9 @@ fun GeneratorToggleRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFF059669),
-                uncheckedThumbColor = Color(0xFF94A3B8),
-                uncheckedTrackColor = Color(0xFF1E293B)
+                checkedTrackColor = PrimaryRed,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color(0xFFCBD5E1)
             )
         )
     }

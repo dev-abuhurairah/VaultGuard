@@ -10,7 +10,7 @@ class TotpGeneratorTest {
 
     @Test
     fun testBase32Decoding() {
-        val secret = "JBSWY3DPEHPK3PXP" // "Hello!" in Base32
+        val secret = "JBSWY3DPEE" // "Hello!" in Base32
         val decoded = TotpGenerator.decodeBase32(secret)
         val decodedStr = String(decoded, Charsets.UTF_8)
         assertEquals("Hello!", decodedStr)

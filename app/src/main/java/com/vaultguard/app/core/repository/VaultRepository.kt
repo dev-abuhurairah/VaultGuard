@@ -105,8 +105,6 @@ class VaultRepository private constructor(
      */
     fun unlockWithBiometric(): Boolean {
         if (!isBiometricEnabled()) return false
-        // Derives or retrieves the hardware key for the session
-        val saltBase64 = prefs.getString(PREF_SALT, null) ?: return false
         val verifier = prefs.getString(PREF_PASSWORD_VERIFIER, null) ?: return false
         
         // When biometric is enabled, the master key is cached in hardware Keystore wrapper
